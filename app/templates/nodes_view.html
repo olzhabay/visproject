@@ -1,0 +1,32 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Nodes view</title>
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="{% static 'css/main.css' %}">
+<script src="//d3js.org/d3.v3.min.js"></script>
+</head>
+<body>
+    <div class="page-header"><h1>Nodes view</h1></div>
+<div id="chart"></div>
+<script>
+
+var data = {{ data_json|safe }};
+console.log(data)
+var x = d3.scale.linear()
+          .domain([0, d3.max(data)])
+          .range([0, 420]);
+
+d3.select(".chart")
+  .selectAll("div")
+  .data(data)
+  .enter().append("div")
+  .style("width", function(d) { return x(d) + "px"; })
+  .text(function(d) { return d; });
+
+ </script>
+</body>
+</html>

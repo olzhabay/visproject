@@ -25,7 +25,7 @@ SECRET_KEY = 'rzke=h^is)_16o4br)x2ut39e84&!_!!74k5r2!&qa!6x+-t9j'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '10.20.16.179']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '10.20.16.179', '0.0.0.0']
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'app'
 ]
 
 MIDDLEWARE = [
@@ -79,7 +80,7 @@ DATABASES = {
         'NAME': 'visproject',
         'USER': 'visuser',
         'PASSWORD': 'password',
-        'HOST': 'localhost',
+        'HOST': '10.20.16.179',
         'PORT': '',
     }
 }
