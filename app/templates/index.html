@@ -1,85 +1,116 @@
 {% load staticfiles %}
+{% load nvd3_tags %}
 <!-- app/templates/about.html -->
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Home</title>
-        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
-        <link rel="stylesheet" href="{% static 'nvd3/build/nv.d3.css' %}">
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.2/d3.min.js" charset="utf-8"></script>
-        <script src="{% static 'nvd3/build/nv.d3.js' %}"></script>
-        <style>
-            text {
-                font: 12px sans-serif;
-            }
-            svg {
-                display: block;
-                float: left;
-                height: 350px !important;
-                width: 350px !important;
-            }
-            html, body {
-                margin: 0px;
-                padding: 0px;
-                height: 100%;
-                width: 100%;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="page-header"><h1>Welcome to the Visual Analytics Project page</h1></div>
-        <div><a href="/about/">About</a></div>
-
-        <h2>Total CPU Cores</h2>
-        <div><svg id="test1" class="mypiechart"></svg></div>
-        <br/>
-        <h2>Total Ram GB</h2>
-        <div><svg id="test2" class="mypiechart"></svg></div>
+<head>
+    <meta charset="utf-8">
+    <title>Home</title>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'nvd3/build/nv.d3.css' %}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.2/d3.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src='{% static 'jquery/dist/jquery.js' %}'></script>
+    <script src="{% static 'nvd3/build/nv.d3.js' %}"></script>
+    <style>
+        text {
+            font: 12px sans-serif;
+        }
+        html, body {
+            margin: 0px;
+            padding: 0px;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header"><h1>Welcome to the Visual Analytics Project page</h1></div>
+    <div><a href="/about/">About</a></div>
+    <div><a href="/app_view/">Application view</a></div>
+    <h2>Total CPU Cores</h2>
+    <div><svg id="cpu_stats" class="mypiechart"></svg></div>
+    <h2>Total Ram Mb</h2>
+    <div><svg id="ram_stats" class="mypiechart"></svg></div>
+    <h2>CPU Status</h2>
+    <div><svg id="cpu_status" class="mybarchart"></svg></div>
     <script>
-    function GetJSON(yourUrl){
-        var Httpreq = new XMLHttpRequest(); // a new request
-        Httpreq.open("GET",yourUrl,false);
-        Httpreq.send(null);
-        return Httpreq.responseText;
-    }
 
-    var data = GetJSON("{% url 'get_nodes_data' %}");
-    var json_data = JSON.parse(data);
-    var height = 350;
-    var width = 350;
-    nv.addGraph(function() {
-        var chart = nv.models.pieChart()
-            .x(function(d) { return d.name })
-            .y(function(d) { return d.cpu_cores })
-            .width(width)
-            .height(height)
-            .showTooltipPercent(true);
-        d3.select("#test1")
-            .datum(json_data)
-            .transition().duration(1200)
-            .attr('width', width)
-            .attr('height', height)
-            .call(chart);
-        return chart;
-    });
+        function GetJSON(yourUrl){
+            var Httpreq = new XMLHttpRequest(); // a new request
+            Httpreq.open("GET",yourUrl,false);
+            Httpreq.send(null);
+        return Httpreq.responseText;
+        }
+
+        var json_nodes_stats = JSON.parse(GetJSON("{% url 'get_nodes_stats' %}"));
+        function get_nodes_status() {
+            var json_nodes_status = JSON.parse(GetJSON("{% url 'get_nodes_status' %}"));
+            return [
+                {
+                    key: "Cumulative Return",
+                    values: json_nodes_status
+                }
+            ]
+        }
         nv.addGraph(function() {
-        var chart = nv.models.pieChart()
-            .x(function(d) { return d.name })
-            .y(function(d) { return d.ram_amount })
-            .width(width)
-            .height(height)
-            .showTooltipPercent(true);
-        d3.select("#test2")
-            .datum(json_data)
-            .transition().duration(1200)
-            .attr('width', width)
-            .attr('height', height)
-            .call(chart);
-        return chart;
-    });
+            var chart = nv.models.pieChart()
+                .x(function(d) { return d.name })
+                .y(function(d) { return d.cpu_cores })
+                .showLegend(true)
+                .showLabels(false)
+                .height(600)
+                .showTooltipPercent(true);
+            d3.select("#cpu_stats")
+                .datum(json_nodes_stats)
+                .transition().duration(1200)
+                .attr("width", '100%')
+                .attr("height", '600px')
+                .call(chart);
+            nv.utils.windowResize(
+                function () {
+                    chart.update();
+                });
+            return chart;
+        });
+        nv.addGraph(function() {
+            var chart = nv.models.pieChart()
+                .x(function(d) { return d.name })
+                .y(function(d) { return d.ram_amount })
+                .showLegend(true)
+                .showLabels(false)
+                .height(600)
+                .showTooltipPercent(true);
+            d3.select("#ram_stats")
+                .datum(json_nodes_stats)
+                .attr("width", '100%')
+                .attr("height", '600px')
+                .transition().duration(1200)
+                .call(chart);
+            return chart;
+        });
+
+        nv.addGraph(function() {
+            var chart = nv.models.discreteBarChart()
+                .x(function(d) { return d.name })
+                .y(function(d) { return d.cpu_cores })
+                .staggerLabels(true)
+                .height(600)
+                .showValues(true)
+                .duration(250)
+                ;
+            d3.select('#cpu_status')
+                .datum(get_nodes_status)
+                .attr("width", '100%')
+                .attr("height", '600px')
+                .call(chart);
+            nv.utils.windowResize(chart.update);
+            return chart;
+        });
+
+
     </script>
-    </body>
+</body>
 </html>
