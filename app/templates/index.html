@@ -30,14 +30,11 @@
     <div class="page-header"><h1>Welcome to the Visual Analytics Project page</h1></div>
     <div><a href="/about/">About</a></div>
     <div><a href="/app_view/">Application view</a></div>
-    <h2>Total CPU Cores</h2>
-    <div><svg id="cpu_stats" class="mypiechart"></svg></div>
-    <h2>Total Ram Mb</h2>
-    <div><svg id="ram_stats" class="mypiechart"></svg></div>
-    <h2>CPU Status</h2>
-    <div><svg id="cpu_status" class="mybarchart"></svg></div>
+    <h2>Total CPU Usage</h2>
+    <svg id="cpu_stats" class="mypiechart"></svg>
+    <h2>Total Ram Usage</h2>
+    <svg id="ram_stats" class="mypiechart"></svg>
     <script>
-
         function GetJSON(yourUrl){
             var Httpreq = new XMLHttpRequest(); // a new request
             Httpreq.open("GET",yourUrl,false);
@@ -58,16 +55,17 @@
         nv.addGraph(function() {
             var chart = nv.models.pieChart()
                 .x(function(d) { return d.name })
-                .y(function(d) { return d.cpu_cores })
+                .y(function(d) { return d.cpu_usage })
                 .showLegend(true)
                 .showLabels(false)
-                .height(600)
+                .height(300)
+                .width(300)
                 .showTooltipPercent(true);
             d3.select("#cpu_stats")
                 .datum(json_nodes_stats)
                 .transition().duration(1200)
-                .attr("width", '100%')
-                .attr("height", '600px')
+                .attr("height", '300px')
+                .attr("width", '300px')
                 .call(chart);
             nv.utils.windowResize(
                 function () {
@@ -78,15 +76,16 @@
         nv.addGraph(function() {
             var chart = nv.models.pieChart()
                 .x(function(d) { return d.name })
-                .y(function(d) { return d.ram_amount })
+                .y(function(d) { return d.ram_usage })
                 .showLegend(true)
                 .showLabels(false)
-                .height(600)
+                .height(300)
+                .width(300)
                 .showTooltipPercent(true);
             d3.select("#ram_stats")
                 .datum(json_nodes_stats)
-                .attr("width", '100%')
-                .attr("height", '600px')
+                .attr("height", '300px')
+                .attr("width", '300px')
                 .transition().duration(1200)
                 .call(chart);
             return chart;

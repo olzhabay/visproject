@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from app.models import Application, Container, Metric
 
+
 class ApplicationSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Application
         fields = ('name', 'started', 'finished')
+
 
 class ContainerSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -12,6 +14,7 @@ class ContainerSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('name', 'app_name', 'node_name',
                   'started', 'finished',
                   'vcore_allocated', 'ram_allocated')
+
 
 class MetricSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:

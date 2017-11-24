@@ -24,3 +24,7 @@ h1, h2, h3, h4, p, text {
 .text {
     font-size: 12px;
 }
+
+th, td {
+    width:25%;
+}

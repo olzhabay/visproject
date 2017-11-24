@@ -3,17 +3,20 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from django.core import serializers
+from django.db.models import Q
 from django.shortcuts import render, render_to_response
 from django.http import HttpResponse, StreamingHttpResponse, JsonResponse
 from django.template import RequestContext
 from django.views.generic import TemplateView
 from django import forms
 from rest_framework import viewsets
+from rest_framework.renderers import JSONRenderer
+from rest_framework.parsers import JSONParser
 from app.serializers import *
 
 from app.models import Node, Application, Container
 import json
-
+from random import *
 
 class HomePageView(TemplateView):
     def get(self, request, **kwargs):
@@ -32,7 +35,21 @@ class AppView(TemplateView):
 
 
 def get_nodes_stats(request):
-    data = Node.objects.all().values('name', 'cpu_cores', 'ram_amount')
+    cpu_usage = randint(1, 100)
+    ram_usage = randint(40, 80)
+    data = [
+        {
+        'cpu_usage' : cpu_usage,
+        'ram_usage' : ram_usage,
+        'name' : "In use"
+        },
+        {
+        'cpu_usage' : 100 - cpu_usage,
+        'ram_usage' : 100 - ram_usage,
+        'name' : "Free"
+        }
+    ]
+    #data = Node.objects.all().values('name', 'cpu_cores', 'ram_amount')
     return JsonResponse(list(data), safe=False)
 
 
@@ -42,19 +59,21 @@ def get_nodes_status(request):
 
 
 def get_app_details(request):
-    global app_data
-    if request.method == 'POST':
-        app_name = request.POST['app_name']
-        app_data = Application.objects.get(name=app_name)
-    return HttpResponse(content=app_data)
+    if request.method == 'GET':
+        app_name = request.GET['app_name']
+        app_data = Application.objects.filter(Q(name=app_name)).values('name', 'started', 'finished')
+        return JsonResponse(list(app_data), safe=False)
+    else:
+        return JsonResponse({"nothing to see" : "not working"}, safe=False)
 
 
 def get_app_containers(request):
-    global container_data
-    if request.method == 'POST':
-        app_name = request.POST['app_name']
-        container_data = Container.objects.all().filter(app_name=app_name)
-    return JsonResponse(list(container_data), safe=False)
+    if request.method == 'GET':
+        app_name = request.GET['app_name']
+        container_data = Container.objects.filter(Q(app_name=app_name)).values('name', 'node_name', 'started', 'finished')
+        return JsonResponse(list(container_data), safe=False)
+    else:
+        return JsonResponse({"nothing to see" : "not working"}, safe=False)
 
 
 def nodes_status_chart(request):
