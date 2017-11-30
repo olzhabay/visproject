@@ -13,7 +13,9 @@ urlpatterns = [
     url(r'^get_nodes_stats/$', views.get_nodes_stats, name='get_nodes_stats'),
     url(r'^get_nodes_status/$', views.get_nodes_status, name='get_nodes_status'),
     url(r'^app_view/$', views.AppView.as_view()),
+    url(r'^get_all_apps/$', views.get_all_apps, name='get_all_apps'),
     url(r'^get_app_details/$', views.get_app_details, name='get_app_details'),
     url(r'^get_app_containers/$', views.get_app_containers, name='get_app_containers'),
+    url(r'^get_container_metrics/$', views.get_container_metrics, name='get_container_metrics'),
     url(r'^', include(router.urls))
 ]

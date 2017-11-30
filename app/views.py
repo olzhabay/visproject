@@ -58,6 +58,14 @@ def get_nodes_status(request):
     return JsonResponse(list(data), safe=False)
 
 
+def get_all_apps(request):
+    if request.method == 'GET':
+        app_data = Application.objects.all().values('name', 'started', 'finished')
+        return JsonResponse(list(app_data), safe=False)
+    else:
+        return JsonResponse({"nothing to see" : "not working"}, safe=False)
+
+
 def get_app_details(request):
     if request.method == 'GET':
         app_name = request.GET['app_name']
@@ -70,8 +78,16 @@ def get_app_details(request):
 def get_app_containers(request):
     if request.method == 'GET':
         app_name = request.GET['app_name']
-        container_data = Container.objects.filter(Q(app_name=app_name)).values('name', 'node_name', 'started', 'finished')
+        container_data = Container.objects.filter(Q(app_name=app_name)).values('name', 'node_name', 'started', 'finished', 'vcore_allocated', 'ram_allocated')
         return JsonResponse(list(container_data), safe=False)
+    else:
+        return JsonResponse({"nothing to see" : "not working"}, safe=False)
+
+def get_container_metrics(request):
+    if request.method == 'GET':
+        container_name = request.GET['container_name']
+        metric_data = Metric.objects.filter(Q(container_name=container_name)).values('time', 'cpu_usage', 'ram_usage', 'disk_write', 'hdfs_read', 'time_span')
+        return JsonResponse(list(metric_data), safe=False)
     else:
         return JsonResponse({"nothing to see" : "not working"}, safe=False)
 
