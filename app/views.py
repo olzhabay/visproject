@@ -14,9 +14,10 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from app.serializers import *
 
-from app.models import Node, Application, Container
+from app.models import Node, Application, Container, Server
 import json
 from random import *
+
 
 class HomePageView(TemplateView):
     def get(self, request, **kwargs):
@@ -27,11 +28,12 @@ class AboutView(TemplateView):
     template_name = "about.html"
 
 
-class AppView(TemplateView):
+class Details(TemplateView):
     def get(self, request, **kwargs):
-        apps = Application.objects.all().values('name')
-        context = { 'applications' : apps, }
-        return render(request, 'app_view.html', context=context)
+        apps = Application.objects.all().values('id','name')
+        servers = Server.objects.all().values('name')
+        context = {'applications': apps, 'servers': servers}
+        return render(request, 'details.html', context=context)
 
 
 def get_nodes_stats(request):
@@ -39,17 +41,17 @@ def get_nodes_stats(request):
     ram_usage = randint(40, 80)
     data = [
         {
-        'cpu_usage' : cpu_usage,
-        'ram_usage' : ram_usage,
-        'name' : "In use"
+            'cpu_usage': cpu_usage,
+            'ram_usage': ram_usage,
+            'name': "In use"
         },
         {
-        'cpu_usage' : 100 - cpu_usage,
-        'ram_usage' : 100 - ram_usage,
-        'name' : "Free"
+            'cpu_usage': 100 - cpu_usage,
+            'ram_usage': 100 - ram_usage,
+            'name': "Free"
         }
     ]
-    #data = Node.objects.all().values('name', 'cpu_cores', 'ram_amount')
+    # data = Node.objects.all().values('name', 'cpu_cores', 'ram_amount')
     return JsonResponse(list(data), safe=False)
 
 
@@ -63,7 +65,7 @@ def get_all_apps(request):
         app_data = Application.objects.all().values('name', 'started', 'finished')
         return JsonResponse(list(app_data), safe=False)
     else:
-        return JsonResponse({"nothing to see" : "not working"}, safe=False)
+        return JsonResponse({"nothing to see": "not working"}, safe=False)
 
 
 def get_app_details(request):
@@ -72,24 +74,64 @@ def get_app_details(request):
         app_data = Application.objects.filter(Q(name=app_name)).values('name', 'started', 'finished')
         return JsonResponse(list(app_data), safe=False)
     else:
-        return JsonResponse({"nothing to see" : "not working"}, safe=False)
+        return JsonResponse({"nothing to see": "not working"}, safe=False)
+
+
+def get_app_details_by_node(request):
+    if request.method == 'GET':
+        app_name = request.GET['app_name']
+        app_data = Application.objects.filter(Q(name=app_name)).values('name', 'started', 'finished')
+        server_name = request.GET['server_name']
+        metric_data = Metric.objects.filter(Q(server_name=server_name, app_name=app_name))\
+            .values('app_name', 'container_name', 'server_name', 'time', 'cpu_usage', 'ram_usage',
+                    'disk_read', 'disk_write', 'hdfs_read', 'hdfs_write', 'time_span')\
+            .order_by('time')
+        return JsonResponse({"app_data": list(app_data), "metric_data": list(metric_data)}, safe=False)
+    else:
+        return JsonResponse({"nothing to see": "not working"}, safe=False)
+
+
+def get_node_metrics(request):
+    if request.method == 'GET':
+        server_name = request.GET['server_name']
+        resource_name = request.GET['resource_name']
+        applications = Metric.objects.filter(Q(server_name=server_name)).values('app_name').distinct()
+        data = []
+        for application in applications:
+            values = Metric.objects.filter(server_name=server_name, app_name=application['app_name'])\
+                          .values('time', resource_name)\
+                          .order_by('time')
+            metric = {
+                'key': application['app_name'],
+                'values': list(values)
+            }
+            data.append(metric)
+        return JsonResponse({"data": data}, safe=False)
+    else:
+        return JsonResponse({"nothing to see": "not working"}, safe=False)
+
 
 
 def get_app_containers(request):
     if request.method == 'GET':
         app_name = request.GET['app_name']
-        container_data = Container.objects.filter(Q(app_name=app_name)).values('name', 'node_name', 'started', 'finished', 'vcore_allocated', 'ram_allocated')
+        container_data = Container.objects.filter(Q(app_name=app_name)).values('name', 'node_name', 'started',
+                                                                               'finished', 'vcore_allocated',
+                                                                               'ram_allocated')
         return JsonResponse(list(container_data), safe=False)
     else:
-        return JsonResponse({"nothing to see" : "not working"}, safe=False)
+        return JsonResponse({"nothing to see": "not working"}, safe=False)
+
 
 def get_container_metrics(request):
     if request.method == 'GET':
         container_name = request.GET['container_name']
-        metric_data = Metric.objects.filter(Q(container_name=container_name)).values('time', 'cpu_usage', 'ram_usage', 'disk_write', 'hdfs_read', 'time_span')
+        metric_data = Metric.objects.filter(Q(container_name=container_name)).values('time', 'cpu_usage', 'ram_usage',
+                                                                                     'disk_write', 'hdfs_read',
+                                                                                     'time_span')
         return JsonResponse(list(metric_data), safe=False)
     else:
-        return JsonResponse({"nothing to see" : "not working"}, safe=False)
+        return JsonResponse({"nothing to see": "not working"}, safe=False)
 
 
 def nodes_status_chart(request):
@@ -118,11 +160,12 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
 
+
 class ContainerViewSet(viewsets.ModelViewSet):
-    queryset =  Container.objects.all()
+    queryset = Container.objects.all()
     serializer_class = ContainerSerializer
+
 
 class MetricViewSet(viewsets.ModelViewSet):
     queryset = Metric.objects.all()
     serializer_class = MetricSerializer
-

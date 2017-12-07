@@ -8,10 +8,21 @@
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
         <link rel="stylesheet" href="{% static 'css/main.css' %}">
+        <link rel="stylesheet" href="{% static 'nvd3/build/../../static/css/nv.d3.css' %}">
+        <link rel="stylesheet" href="{% static 'd3-timeline-chart/dist/../../static/css/timeline-chart.css' %}">
+        <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.2/d3.min.js" charset="utf-8"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.6.7/d3-tip.min.js"></script>
+        <script type="text/javascript" src='{% static 'js/main.js' %}'></script>
+        <script type="text/javascript" src='{% static 'jquery/dist/../../static/js/jquery.js' %}'></script>
+        <script type="text/javascript" src="{% static 'nvd3/build/../../static/js/nv.d3.js' %}"></script>
+        <script type="text/javascript" src="{% static 'd3-timeline-chart/dist/../../static/js/timeline-chart.js' %}"></script>
     </head>
     <body>
-        <h1>Welcome to the about page</h1>
+        <div class="page-header"><h1>Welcome to the Visual Analytics Project page</h1></div>
+        <div class="container">
         <p>Authors: Olzhas Kaiyrakhmet and Hyungoo Kim</p>
-        <a href="/">Go back home</a>
+        <a href="/"><button type="button" class="btn">Go back home</button></a>
+        </div>
     </body>
 </html>

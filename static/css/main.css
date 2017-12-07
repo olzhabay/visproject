@@ -1,0 +1,86 @@
+.page-header {
+    background-color: #ff9400;
+    margin-top: 0;
+    text-align: center;
+    padding: 20px 20px 20px 40px;
+}
+
+.page-header h1, .page-header h1 a, .page-header h1 a:visited, .page-header h1 a:active {
+    color: #ffffff;
+    font-size: 36pt;
+    text-decoration: none;
+}
+
+div.row {
+    margin: 15px;
+}
+
+.html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+}
+
+#timeline-container {
+    width: 90%;
+    height: 800px;
+    background: rgb(217, 217, 217);
+    opacity: 0.9;
+    border-radius: 5px;
+    border: 1px solid #2b2b2b;
+}
+
+#timeline-container line {
+    stroke: #2b2b2b;
+}
+
+#timeline-container line.vertical-marker.now {
+    stroke: #c00;
+}
+
+rect.interval.blue-interval {
+    fill: blue;
+    stroke: blue;
+}
+
+rect.interval.white-interval {
+    fill: white;
+    stroke: white;
+}
+
+circle.blue-dot {
+    fill: blue;
+}
+
+/* Override d3tip */
+
+.d3-tip {
+    background: white;
+    color: black;
+}
+
+/* Tiny Flex Grid */
+
+[flex] {
+    display: flex;
+}
+[flex-fill] {
+    flex: 1;
+}
+[flex-full-center] {
+    align-items: center;
+    justify-content: center;
+}
+[flex-direction=column] {
+    flex-direction: column;
+}
+[flex-direction=row] {
+    flex-direction: row;
+}
+[flex-size="40"] {
+    flex: 40;
+}
+[flex-size="60"] {
+    flex: 60;
+}

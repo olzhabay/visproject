@@ -1,0 +1,182 @@
+{% load staticfiles %}
+{% load nvd3_tags %}
+<!-- app/templates/about.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Home</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/0.0.1/prism.min.css" />
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static '/css/nv.d3.css' %}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/0.0.1/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.2/d3.js" charset="utf-8"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.6.7/d3-tip.min.js"></script>
+    <script type="text/javascript" src='{% static 'js/main.js' %}'></script>
+    <script type="text/javascript" src='{% static 'js/jquery.js' %}'></script>
+    <script type="text/javascript" src="{% static 'js/nv.d3.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/../../static/timeline-chart/timeline-chart.js' %}"></script>
+    <style>
+        text {
+            font: 12px sans-serif;
+        }
+        html, body {
+            margin: 0px;
+            padding: 0px;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url : "{% url 'get_all_apps' %}",
+                type : "GET",
+                data : { },
+
+                success : function (json) {
+                        const element = document.getElementById('timeline-container');
+                        var data = [];
+                        for (var i = 0; i < json.length; ++i) {
+                            var obj = json[i];
+                            var iter = [{
+                                label: obj.name,
+                                data: [{
+                                    type: TimelineChart.TYPE.INTERVAL,
+                                    from: new Date(obj.started),
+                                    to: new Date(obj.finished),
+                                    customClass: 'white-interval'
+                                }]
+                            }];
+                            data = data.concat(iter);
+                        }
+                        const timeline = new TimelineChart(element, data, {
+                            tip: function(d) {
+                                return d.at || `${d.from}<br>${d.to}`;
+                            }
+                        });
+                },
+                error : function (xhr, errmsg, err) {
+                    $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+ " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+                    }
+            });
+        });
+        'use strict';
+        var resource_name;
+        var server_name;
+        $(document).ready(function() {
+            $('#get-app').on('submit', function (event) {
+                event.preventDefault();
+                server_name = $('#server_name').val();
+                resource_name = $('#resource_name').val();
+                $.ajax({
+                    url : "{% url 'get_node_metrics' %}",
+                    type : "GET",
+                    data : {
+                        resource_name: resource_name,
+                        server_name: server_name
+                    },
+
+                    success : function (json) {
+                        var myData = json.data;
+
+                        nv.addGraph(function() {
+                          var chart = nv.models.lineWithFocusChart()
+                              .options({
+                                  duration: 300,
+                                  useInteractiveGuideline: true
+                              })
+                              .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
+                              .x(function(d) { return d.time })   //We can modify the data accessor functions...
+                              .y(function(d) { return d.cpu_usage })   //...in case your data is formatted differently.
+                              .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                              .showYAxis(true)        //Show the y-axis
+                              .showXAxis(true)        //Show the x-axis
+                              .height(500)
+                          ;
+
+                          chart.xAxis     //Chart x-axis settings
+                              .axisLabel('Time');
+
+                          chart.yAxis     //Chart y-axis settings
+                              .axisLabel(resource_name);
+
+                          d3.select('#resource_chart')
+                              .attr("height", '500px')
+                              .datum(myData)         //Populate the <svg> element with chart data...
+                              .call(chart);          //Finally, render the chart!
+
+                          //Update the chart when window resizes.
+                          nv.utils.windowResize(function() { chart.update() });
+                          return chart;
+                        });
+
+                        },
+
+                    error : function (xhr, errmsg, err) {
+                        $('#results').html("<div class='alert-box alert radius' data-alert>Oops! We have encountered an error: "+errmsg+ " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+                    }
+                });
+            });
+        });
+
+    </script>
+</head>
+<body>
+    <div class="page-header"><h1>Welcome to the Visual Analytics Project page</h1></div>
+
+    <div class="container" id="main-container">
+        <div class="row"><a href="/"><button type="button" class="btn">Go to Main</button></a></div>
+
+        <div class="row" id="results"></div> <!-- errors go here -->
+
+        <div class="row">
+        <section flex flex-full-center>
+            <div id="timeline-container"></div>
+        </section>
+        </div>
+
+        <div class="row">
+            <h2 class="">Server info details</h2>
+        </div>
+        <div class="row">
+        <form class="form-group" action="" id="get-app">
+            {% csrf_token %}
+        <!---
+            <label for="sel1">Application:</label>
+            <select class="form-control" name="app_name" id="app_name">
+                {% for application in applications %}
+                    <option value="{{ application.name }}">{{ application.name }}</option>
+                {% endfor %}
+            </select>
+            --->
+            <label for="sel1">Server:</label>
+            <select class="form-control" name="server_name" id="server_name">
+                {% for server in servers %}
+                    <option value="{{ server.name }}">{{ server.name }}</option>
+                {% endfor %}
+            </select>
+            <label for="sel1">Resource type</label>
+            <select class="form-control" name="resource_name" id="resource_name">
+                <option value="cpu_usage">CPU</option>
+                <option value="ram_usage">RAM</option>
+                <option value="disk_write">Disk Write</option>
+                <option value="disk_read">Disk Read</option>
+                <option value="hdfs_write">HDFS Write</option>
+                <option value="hdfs_read">HDFS Read</option>
+            </select>
+            <input type="submit" value="Get" class="btn btn-default">
+        </form>
+        </div>
+        <div class="row">
+            <div id="resource_type"></div>
+            <svg id="resource_chart"></svg>
+
+        </div>
+    </div>
+</body>
+</html>
